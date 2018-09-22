@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace WA_SA_AI.Api.Services
 {
-    public class TagServices
+    public class TagService
     {
     }
 }

@@ -26,7 +26,7 @@ namespace WA_SA_AI.Api.Controllers
         }
 
         // POST: api/Classification
-        [HttpPost]
+        [Route("api/[controller]")]
         public void Post([FromBody] string value)
         {
         }
