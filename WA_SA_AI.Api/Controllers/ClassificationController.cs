@@ -29,28 +29,40 @@ namespace WA_SA_AI.Api.Controllers
         }
 
         // POST: api/Classification
+        [HttpPost]
         [Route("PredictImage")]
-        public async Task<PredictionModel> PredictImageAsync(List<IFormFile> files)
+        public async Task<PredictionModel> PredictImageAsync(IFormFile formFile)
         {
-            long size = files.Sum(f => f.Length);
-
-            // full path to file in temp location
             var filePath = Path.GetTempFileName();
-            var formFile = files.FirstOrDefault();
+
             if (formFile != null && formFile.Length > 0)
             {
-                using (var stream = new MemoryStream())
+                var stream = new FileStream(filePath, FileMode.Create);
+                stream.Close();
+                using (var memoryStream = new MemoryStream(System.IO.File.ReadAllBytes(filePath)))
                 {
-                    await formFile.CopyToAsync(stream);
-                    PredictionModel predictionModel = await new ClassificationService().PredictImage(stream);
+                    PredictionModel predictionModel = await new ClassificationService().PredictImage(memoryStream);
                     //do some processing
                     return predictionModel;
                 }
             }
             else
             {
-                return null;
+                throw new Exception("formFile not found or empty file");
             }
+
+            //foreach (var formFile in files)
+            //{
+            //    if (formFile.Length > 0)
+            //    {
+            //        using (var stream = new FileStream(filePath, FileMode.Create))
+            //        {
+            //            await formFile.CopyToAsync(stream);
+            //        }
+            //    }
+            //}
+            ////var formFile = files.FirstOrDefault();
+
         }
 
         // PUT: api/Classification/5

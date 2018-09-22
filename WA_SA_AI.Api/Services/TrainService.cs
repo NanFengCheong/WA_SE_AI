@@ -33,12 +33,12 @@ namespace WA_SA_AI.Api.Services
             }
 
             // Add some images to the tags
-            Console.WriteLine("Load image into memory");
+            Console.WriteLine("Start load image into memory");
             List<string> TrainImages = LoadImagesFromDisk(tagName);
 
             if (TrainImages != null)
             {
-                Console.WriteLine("Uploading images");
+                Console.WriteLine("Uploading " + TrainImages.Count + "images");
                 var trainImageFiles = TrainImages.Select(img => new ImageFileCreateEntry(Path.GetFileName(img), File.ReadAllBytes(img))).ToList();
                 trainingApi.CreateImagesFromFiles(project.Id, new ImageFileCreateBatch(trainImageFiles, new List<Guid>() { trainTag.Id }));
 
