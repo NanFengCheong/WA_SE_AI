@@ -38,6 +38,7 @@ namespace WA_SA_AI.Api.Controllers
             if (formFile != null && formFile.Length > 0)
             {
                 var stream = new FileStream(filePath, FileMode.Create);
+                await formFile.CopyToAsync(stream);
                 stream.Close();
                 using (var memoryStream = new MemoryStream(System.IO.File.ReadAllBytes(filePath)))
                 {

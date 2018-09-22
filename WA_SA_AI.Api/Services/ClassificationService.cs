@@ -24,14 +24,20 @@ namespace WA_SA_AI.Api.Services
             TrainingApi trainingApi = new TrainingApi() { ApiKey = trainingKey };
             var projects = await trainingApi.GetProjectsAsync();
             var project = projects.First(f => f.Name == "WA-SE-AI");
-            var result = endpoint.PredictImage(project.Id, testImage);
-
-            // Loop over each prediction and write out the results
-            foreach (var c in result.Predictions)
+            try
             {
-                Console.WriteLine($"\t{c.TagName}: {c.Probability:P1}");
+                var result = endpoint.PredictImage(project.Id, testImage);
+                // Loop over each prediction and write out the results
+                foreach (var c in result.Predictions)
+                {
+                    Console.WriteLine($"\t{c.TagName}: {c.Probability:P1}");
+                }
+                return result.Predictions.OrderByDescending(m => m.Probability).First();
             }
-            return result.Predictions.OrderByDescending(m => m.Probability).First();
+            catch (Exception e)
+            {
+                throw new Exception("PredictImage failed");
+            }
         }
     }
 }
