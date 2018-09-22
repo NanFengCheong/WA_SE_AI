@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using WA_SA_AI.Api.Model;
 using WA_SA_AI.Api.Services;
 
 namespace WA_SA_AI.Api.Controllers
@@ -19,13 +20,13 @@ namespace WA_SA_AI.Api.Controllers
             return new string[] { "value1", "value2" };
         }
 
-        // GET: api/Train/5
-        [HttpGet("{tagName}", Name = "Get")]
-        public bool Get(string tagName, string description)
+        // POST: api/Train
+        [HttpPost]
+        public bool Post([FromBody] TrainParam trainParam)
         {
-            if (tagName != null || tagName != "")
+            if (trainParam.TagName != null || trainParam.TagName != "")
             {
-                return new TrainService().Train(tagName, description);
+                return new TrainService().Train(trainParam.TagName, trainParam.Description);
             }
             else
             {
@@ -33,16 +34,11 @@ namespace WA_SA_AI.Api.Controllers
             }
         }
 
-        // POST: api/Train
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
         // PUT: api/Train/5
         [HttpPut("{id}")]
         public void Put(int id, [FromBody] string value)
         {
+
         }
 
         // DELETE: api/ApiWithActions/5

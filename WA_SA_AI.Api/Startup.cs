@@ -45,6 +45,8 @@ namespace WA_SA_AI.Api
             {
                 app.UseHsts();
             }
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
             app.UseCors("MyPolicy");
             app.UseHttpsRedirection();
             app.UseMvc();
