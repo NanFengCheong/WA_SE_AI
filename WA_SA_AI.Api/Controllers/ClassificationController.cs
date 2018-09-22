@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+using WA_SA_AI.Api.Model;
 using WA_SA_AI.Api.Services;
 
 namespace WA_SA_AI.Api.Controllers
@@ -31,7 +32,7 @@ namespace WA_SA_AI.Api.Controllers
         // POST: api/Classification
         [HttpPost]
         [Route("PredictImage")]
-        public async Task<PredictionModel> PredictImageAsync(IFormFile formFile)
+        public async Task<PredictImageResult> PredictImageAsync(IFormFile formFile)
         {
             var filePath = Path.GetTempFileName();
 
@@ -42,9 +43,9 @@ namespace WA_SA_AI.Api.Controllers
                 stream.Close();
                 using (var memoryStream = new MemoryStream(System.IO.File.ReadAllBytes(filePath)))
                 {
-                    PredictionModel predictionModel = await new ClassificationService().PredictImage(memoryStream);
+                    PredictImageResult predictImageResult = await new ClassificationService().PredictImage(memoryStream);
                     //do some processing
-                    return predictionModel;
+                    return predictImageResult;
                 }
             }
             else
