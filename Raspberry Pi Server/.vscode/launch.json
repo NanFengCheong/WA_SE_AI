@@ -1,0 +1,14 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Debug RPi",
+      "address": "192.168.43.25",
+      "port": 9229,
+      "localRoot": "${workspaceRoot}",
+      "remoteRoot": "/home/pi/WA_SE_AI"
+    }
+  ]
+}

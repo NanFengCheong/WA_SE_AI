@@ -7,7 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WA_SA_AI.Api", "WA_SA_AI.Ap
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Raspberry_Pi_Server", "Raspberry_Pi_Server", "{58A17DFA-0919-4C86-8F70-C79490A7E349}"
 	ProjectSection(SolutionItems) = preProject
-		index.js = index.js
 		Raspberry Pi Server\index.js = Raspberry Pi Server\index.js
 	EndProjectSection
 EndProject
