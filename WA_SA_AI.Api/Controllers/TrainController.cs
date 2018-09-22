@@ -31,7 +31,6 @@ namespace WA_SA_AI.Api.Controllers
             {
                 throw new Exception("Empty tagName");
             }
-
         }
 
         // POST: api/Train

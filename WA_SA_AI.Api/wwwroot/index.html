@@ -1,0 +1,33 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>WA SE AI</h1>
+    <form id="imageUploadForm">
+        <input type="file" name="pic" accept="image/*">
+        <input type="submit" onclick="callback()">
+    </form>
+
+    <script>
+        function callback() {
+            $.ajax({
+                url: 'api/ClassificationService/PredictImage',
+                type: 'POST',
+                data: new FormData($('#imageUploadForm')[0]), // The form with the file inputs.
+                processData: false,
+                contentType: false                    // Using FormData, no need to process data.
+            }).done(function (result) {
+                console.log("Success: Files sent!");
+                console.log(JSON.stringify(result))
+            }).fail(function (error) {
+                console.log("An error occurred, the files couldn't be sent!");
+                console.log(JSON.stringify(error))
+            });
+        }
+    </script>
+</body>
+</html>

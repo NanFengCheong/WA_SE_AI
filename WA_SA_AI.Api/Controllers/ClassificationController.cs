@@ -39,7 +39,7 @@ namespace WA_SA_AI.Api.Controllers
             var formFile = files.FirstOrDefault();
             if (formFile != null && formFile.Length > 0)
             {
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                using (var stream = new MemoryStream())
                 {
                     await formFile.CopyToAsync(stream);
                     PredictionModel predictionModel = await new ClassificationService().PredictImage(stream);

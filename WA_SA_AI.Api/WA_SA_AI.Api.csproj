@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Folder Include="Images\Plastic Bottle\" />
-    <Folder Include="wwwroot\" />
   </ItemGroup>
 
   <ItemGroup>
