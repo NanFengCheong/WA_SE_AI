@@ -11,11 +11,7 @@ namespace WA_SA_AI.Api.Services
 {
     public class TrainService
     {
-        private List<string> hemlockImages;
-        private List<string> japaneseCherryImages;
-        private MemoryStream testImage;
-
-        public void Train(string tagName)
+        public Boolean Train(string tagName, string description = null)
         {
             // Add your training & prediction key from the settings page of the portal
             string trainingKey = "6308b3b62b344e3f8e4170c4728deed2";
@@ -33,18 +29,18 @@ namespace WA_SA_AI.Api.Services
             }
             catch (Exception)
             {
-                trainTag = trainingApi.CreateTag(project.Id, tagName);
+                trainTag = trainingApi.CreateTag(project.Id, tagName, description);
             }
 
             // Add some images to the tags
             Console.WriteLine("Load image into memory");
-            List<string> FilePathStringList = LoadImagesFromDisk(tagName);
+            List<string> TrainImages = LoadImagesFromDisk(tagName);
 
-            if (FilePathStringList != null)
+            if (TrainImages != null)
             {
                 Console.WriteLine("Uploading images");
-                var hemlockImageFiles = hemlockImages.Select(img => new ImageFileCreateEntry(Path.GetFileName(img), File.ReadAllBytes(img))).ToList();
-                trainingApi.CreateImagesFromFiles(project.Id, new ImageFileCreateBatch(hemlockImageFiles, new List<Guid>() { trainTag.Id }));
+                var trainImageFiles = TrainImages.Select(img => new ImageFileCreateEntry(Path.GetFileName(img), File.ReadAllBytes(img))).ToList();
+                trainingApi.CreateImagesFromFiles(project.Id, new ImageFileCreateBatch(trainImageFiles, new List<Guid>() { trainTag.Id }));
 
                 // Now there are images with tags start training the project
                 Console.WriteLine("\tTraining");
@@ -63,10 +59,12 @@ namespace WA_SA_AI.Api.Services
                 iteration.IsDefault = true;
                 trainingApi.UpdateIteration(project.Id, iteration.Id, iteration);
                 Console.WriteLine("Training Done!\n");
+                return true;
             }
             else
             {
                 Console.WriteLine("No image found!\n");
+                return true;
             }
 
         }

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.CognitiveServices.Vision.CustomVision.Prediction.Models;
+using WA_SA_AI.Api.Services;
 
 namespace WA_SA_AI.Api.Controllers
 {
@@ -26,9 +29,28 @@ namespace WA_SA_AI.Api.Controllers
         }
 
         // POST: api/Classification
-        [Route("api/[controller]")]
-        public void Post([FromBody] string value)
+        [Route("PredictImage")]
+        public async Task<PredictionModel> PredictImageAsync(List<IFormFile> files)
         {
+            long size = files.Sum(f => f.Length);
+
+            // full path to file in temp location
+            var filePath = Path.GetTempFileName();
+            var formFile = files.FirstOrDefault();
+            if (formFile != null && formFile.Length > 0)
+            {
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    await formFile.CopyToAsync(stream);
+                    PredictionModel predictionModel = await new ClassificationService().PredictImage(stream);
+                    //do some processing
+                    return predictionModel;
+                }
+            }
+            else
+            {
+                return null;
+            }
         }
 
         // PUT: api/Classification/5
