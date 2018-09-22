@@ -8,22 +8,21 @@ const say = require("say");
 var camera = new RaspiCam({
   mode: "photo",
   output: "./output.jpg",
-  timeout: "100"
+  timeout: "0"
 });
 
 camera.on("read", function(err, timestamp, filename) {
-  console.log(arguments);
   var imagePath = path.join(__dirname, "output.jpg");
   var r = request.post(
     "https://wa-se-ai-api.azurewebsites.net/api/Classification/PredictImage",
     function optionalCallback(err, httpResponse, body) {
       if (err) {
+        say.speak("Something wrong with server");
         return console.error("upload failed:", err);
+      } else {
+        console.log("Upload successful!  Server responded with:", body);
       }
-      console.log("Upload successful!  Server responded with:", body);
       fs.unlinkSync(imagePath);
-
-      say.speak("Upload successful!  Server responded with");
     }
   );
   var form = r.form();
@@ -45,22 +44,27 @@ var sensor2 = new gpio(18, "in", "both");
 var sensor3 = new gpio(23, "in", "both");
 
 sensor0.watch(function(err, value) {
-  camera.start();
+  console.log("sensor0 = " + value);
+  if (value == 1) {
+    camera.start();
+    //trigger m2x
+  }
 });
 
-// // Loop sensor every sec
+sensor1.watch(function(err, value) {
+  console.log("sensor1 = " + value);
+  //trigger m2x
+});
 
-// (function main() {
+sensor2.watch(function(err, value) {
+  console.log("sensor2 = " + value);
+  //trigger m2x
+});
 
-//     reset();
-
-//     // Sensor below camera detects movement [2]
-//     if (sensor0) {
-//         cameraAPI();
-//         sensor0 = false;
-//     }
-//     setTimeout(main, 1000); // [1]
-// })();
+sensor3.watch(function(err, value) {
+  console.log("sensor3 = " + value);
+  //trigger m2x
+});
 
 (function reset() {
   led1.write(0);
@@ -110,32 +114,32 @@ sensor0.watch(function(err, value) {
 //     }
 // })();
 
-// // Trigger Camera
-// (function waitingWaste() {
-//     // Checks if waste is put in the correct bins - [6]
-//     if (sensor1 == false && sensor2 == false && sensor3 == false) {
-//         waitLED = false;
-//         // Play audio - Thanks
-//     } else {
-//         if (sensor1 == LED1) {
-//             greenLED = true;
-//             redLED = false;
+// Trigger Camera
+(function waitingWaste() {
+  // Checks if waste is put in the correct bins - [6]
+  if (sensor1 == false && sensor2 == false && sensor3 == false) {
+    waitLED = false;
+    // Play audio - Thanks
+  } else {
+    if (sensor1 == LED1) {
+      greenLED = true;
+      redLED = false;
 
-//             sensor1 = false;
-//         } else if (sensor2 == LED2) {
-//             greenLED = true;
-//             redLED = false;
+      sensor1 = false;
+    } else if (sensor2 == LED2) {
+      greenLED = true;
+      redLED = false;
 
-//             sensor2 = false;
-//         } else if (sensor3 == LED3) {
-//             greenLED = true;
-//             redLED = false;
+      sensor2 = false;
+    } else if (sensor3 == LED3) {
+      greenLED = true;
+      redLED = false;
 
-//             sensor3 = false;
-//         } else {
-//             greenLED = false;
-//             redLED = true;
-//         }
-//         setTimeout(waitingWaste, 1000);
-//     }
-// })();
+      sensor3 = false;
+    } else {
+      greenLED = false;
+      redLED = true;
+    }
+    setTimeout(waitingWaste, 1000);
+  }
+})();
