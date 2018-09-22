@@ -5,6 +5,11 @@ VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WA_SA_AI.Api", "WA_SA_AI.Api\WA_SA_AI.Api.csproj", "{122EC154-2377-4B39-95F7-C7293871D9C7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Raspberry_Pi_Server", "Raspberry_Pi_Server", "{58A17DFA-0919-4C86-8F70-C79490A7E349}"
+	ProjectSection(SolutionItems) = preProject
+		index.js = index.js
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
