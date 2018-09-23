@@ -120,15 +120,19 @@ function validateCurrentWaste(sensorName) {
     var binName = currentResult.tag.description.split("@")[1];
     if (sensorName == "sensor1" && binName != "Bin1") {
       console.log("Incorrect Bin: " + sensorName + " " + binName);
+      flashLed(false);
       say.speak("You throw it in the wrong bin, please try harder next time.");
     } else if (sensorName == "sensor2" && binName != "Bin2") {
       console.log("Incorrect Bin: " + sensorName + " " + binName);
+      flashLed(false);
       say.speak("You throw it in the wrong bin, please try harder next time.");
     } else if (sensorName == "sensor3" && binName != "Bin3") {
       console.log("Incorrect Bin: " + sensorName + " " + binName);
+      flashLed(false);
       say.speak("You throw it in the wrong bin, please try harder next time.");
     } else {
       console.log("Correct Bin");
+      flashLed(true);
       say.speak("You throw it in the correct bin, well done.");
     }
     reset();
@@ -171,7 +175,7 @@ function testLED() {
     ledGreen.write(0, function() {});
     ledRed.write(0, function() {});
   }, 3000);
-  say.speak("Ready to serve.");
+  say.speak("Press button to begin scanning.");
 }
 
 function flashLed(isCorrectBin) {
@@ -187,7 +191,6 @@ function flashLed(isCorrectBin) {
       ? ledGreen.write(0, function() {})
       : ledRed.writeSync(0, function() {});
   }, 3000);
-  say.speak("Press button to begin scanning.");
 }
 
 function reset() {
