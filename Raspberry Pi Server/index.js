@@ -6,81 +6,81 @@ var path = require("path");
 const say = require("say");
 
 var camera = new RaspiCam({
-  mode: "photo",
-  output: "./output.jpg",
-  timeout: "100"
+    mode: "photo",
+    output: "./output.jpg",
+    timeout: "100"
 });
 
 var currentResult = null;
 testLED();
 
-camera.on("read", function(err, timestamp, filename) {
-  var imagePath = path.join(__dirname, "output.jpg");
-  if (fs.existsSync(imagePath)) {
-    say.speak("Sending image to server for processing. Please be patient.");
-    var r = request.post(
-      "https://wa-se-ai-api.azurewebsites.net/api/Classification/PredictImage",
-      function callback(err, httpResponse, body) {
-        if (err) {
-          // say.speak("Something wrong with server");
-          return console.error("upload failed:", err);
-        } else {
-          console.log("Server responded with:", body);
-          currentResult = JSON.parse(body);
-          //   {"predictionModel":{"probability":0.999997258,"tagId":"1466abb7-0c60-4739-8440-d74cba80121c","tagName":"Plastic Bottle","boundingBox":null},"tag":{"id":"1466abb7-0c60-4739-8440-d74cba80121c","name":"Plastic Bottle","description":"Recyclable-Plastic@Bin2","imageCount":30}}
-          //get audio
-          var audio = null;
-          if (currentResult != null && currentResult.tag != null) {
-            var recycleType = currentResult.tag.description.split("@")[0];
-            var binName = currentResult.tag.description.split("@")[1];
-            var binColor = "";
-            var binLabel = "";
-            switch (binName) {
-              case "Bin1":
-                binColor = "blue";
-                binLabel = "paper";
-                led1.write(1, function() {});
-                console.log(binName + " " + binColor);
-                break;
-              case "Bin2":
-                binColor = "orange";
-                binLabel = "metal or plastic";
-                led2.write(1, function() {});
-                console.log(binName + " " + binColor);
-                break;
-              case "Bin3":
-                binColor = "brown";
-                binLabel = "other";
-                led3.write(1, function() {});
-                console.log(binName + " " + binColor);
-                break;
-              default:
-                break;
+camera.on("read", function (err, timestamp, filename) {
+    var imagePath = path.join(__dirname, "output.jpg");
+    if (fs.existsSync(imagePath)) {
+        say.speak("Sending image to server for processing. Please be patient.");
+        var r = request.post(
+            "https://wa-se-ai-api.azurewebsites.net/api/Classification/PredictImage",
+            function callback(err, httpResponse, body) {
+                if (err) {
+                    // say.speak("Something wrong with server");
+                    return console.error("upload failed:", err);
+                } else {
+                    console.log("Server responded with:", body);
+                    currentResult = JSON.parse(body);
+                    //   {"predictionModel":{"probability":0.999997258,"tagId":"1466abb7-0c60-4739-8440-d74cba80121c","tagName":"Plastic Bottle","boundingBox":null},"tag":{"id":"1466abb7-0c60-4739-8440-d74cba80121c","name":"Plastic Bottle","description":"Recyclable-Plastic@Bin2","imageCount":30}}
+                    //get audio
+                    var audio = null;
+                    if (currentResult != null && currentResult.tag != null) {
+                        var recycleType = currentResult.tag.description.split("@")[0];
+                        var binName = currentResult.tag.description.split("@")[1];
+                        var binColor = "";
+                        var binLabel = "";
+                        switch (binName) {
+                            case "Bin1":
+                                binColor = "blue";
+                                binLabel = "paper";
+                                led1.write(1, function () { });
+                                console.log(binName + " " + binColor);
+                                break;
+                            case "Bin2":
+                                binColor = "orange";
+                                binLabel = "metal or plastic";
+                                led2.write(1, function () { });
+                                console.log(binName + " " + binColor);
+                                break;
+                            case "Bin3":
+                                binColor = "brown";
+                                binLabel = "other";
+                                led3.write(1, function () { });
+                                console.log(binName + " " + binColor);
+                                break;
+                            default:
+                                break;
+                        }
+
+                        audio =
+                            currentResult.tag.name +
+                            " recognized. It is classified as " +
+                            recycleType +
+                            ". Please proceed to throw it in " +
+                            binColor +
+                            " color bin labelled as " +
+                            binLabel;
+                    }
+
+                    if (audio != null) {
+                        console.log(audio);
+                        say.speak(audio, null, null, function () {
+                            isDetectedSpeechFinished = true;
+                        });
+                    }
+                }
+                fs.unlink(imagePath, function () { });
             }
-
-            audio =
-              currentResult.tag.name +
-              " recognized. It is classified as " +
-              recycleType +
-              ". Please proceed to throw it in " +
-              binColor +
-              " color bin labelled as " +
-              binLabel;
-          }
-
-          if (audio != null) {
-            console.log(audio);
-            say.speak(audio, null, null, function() {
-              isDetectedSpeechFinished = true;
-            });
-          }
-        }
-        fs.unlink(imagePath, function() {});
-      }
-    );
-    var form = r.form();
-    form.append("formFile", fs.createReadStream(imagePath));
-  }
+        );
+        var form = r.form();
+        form.append("formFile", fs.createReadStream(imagePath));
+    }
 });
 
 //pir
@@ -102,112 +102,112 @@ var operationStarted = false;
 var isDetectedSpeechFinished = false;
 
 button.watch((err, value) => {
-  if (err) {
-    console.log(err);
-  } else {
-    if (!operationStarted) {
-      operationStarted = true;
-      console.log("Button pressed " + value);
-      reset();
-      camera.start();
+    if (err) {
+        console.log(err);
+    } else {
+        if (!operationStarted) {
+            operationStarted = true;
+            console.log("Button pressed " + value);
+            reset();
+            camera.start();
+        }
     }
-  }
 });
 
 function validateCurrentWaste(sensorName) {
-  console.log("isDetectedSpeechFinished: " + isDetectedSpeechFinished);
-  if (currentResult && currentResult.tag != null && isDetectedSpeechFinished) {
-    var binName = currentResult.tag.description.split("@")[1];
-    if (sensorName == "sensor1" && binName != "Bin1") {
-      console.log("Incorrect Bin: " + sensorName + " " + binName);
-      flashLed(false);
-      say.speak("You throw it in the wrong bin, please try harder next time.");
-    } else if (sensorName == "sensor2" && binName != "Bin2") {
-      console.log("Incorrect Bin: " + sensorName + " " + binName);
-      flashLed(false);
-      say.speak("You throw it in the wrong bin, please try harder next time.");
-    } else if (sensorName == "sensor3" && binName != "Bin3") {
-      console.log("Incorrect Bin: " + sensorName + " " + binName);
-      flashLed(false);
-      say.speak("You throw it in the wrong bin, please try harder next time.");
-    } else {
-      console.log("Correct Bin");
-      flashLed(true);
-      say.speak("You throw it in the correct bin, well done.");
+    console.log("isDetectedSpeechFinished: " + isDetectedSpeechFinished);
+    if (currentResult && currentResult.tag != null && isDetectedSpeechFinished) {
+        var binName = currentResult.tag.description.split("@")[1];
+        if (sensorName == "sensor1" && binName != "Bin1") {
+            console.log("Incorrect Bin: " + sensorName + " " + binName);
+            flashLed(false);
+            say.speak("You throw it in the wrong bin, please try harder next time.");
+        } else if (sensorName == "sensor2" && binName != "Bin2") {
+            console.log("Incorrect Bin: " + sensorName + " " + binName);
+            flashLed(false);
+            say.speak("You throw it in the wrong bin, please try harder next time.");
+        } else if (sensorName == "sensor3" && binName != "Bin3") {
+            console.log("Incorrect Bin: " + sensorName + " " + binName);
+            flashLed(false);
+            say.speak("You throw it in the wrong bin, please try harder next time.");
+        } else {
+            console.log("Correct Bin");
+            flashLed(true);
+            say.speak("You throw it in the correct bin, well done.");
+        }
+        reset();
+        operationStarted = false;
     }
-    reset();
-    operationStarted = false;
-  }
 }
 
-sensor1.watch(function(err, value) {
-  console.log("sensor1 = " + value);
-  if (value == 1) validateCurrentWaste("sensor1");
-  //trigger m2x
+sensor1.watch(function (err, value) {
+    console.log("sensor1 = " + value);
+    if (value == 1) validateCurrentWaste("sensor1");
+    //trigger m2x
 });
 
-sensor2.watch(function(err, value) {
-  console.log("sensor2 = " + value);
-  if (value == 1) validateCurrentWaste("sensor2");
-  //trigger m2x
+sensor2.watch(function (err, value) {
+    console.log("sensor2 = " + value);
+    if (value == 1) validateCurrentWaste("sensor2");
+    //trigger m2x
 });
 
-sensor3.watch(function(err, value) {
-  console.log("sensor3 = " + value);
-  if (value == 1) validateCurrentWaste("sensor3");
-  //trigger m2x
+sensor3.watch(function (err, value) {
+    console.log("sensor3 = " + value);
+    if (value == 1) validateCurrentWaste("sensor3");
+    //trigger m2x
 });
 
 function testLED() {
-  const iv = setInterval(() => {
-    led1.writeSync(led1.readSync() ^ 1);
-    led2.writeSync(led2.readSync() ^ 1);
-    led3.writeSync(led3.readSync() ^ 1);
-    ledGreen.writeSync(ledGreen.readSync() ^ 1);
-    ledRed.writeSync(ledRed.readSync() ^ 1);
-  }, 200);
-  // Stop blinking the LED and turn it off after 5 seconds
-  setTimeout(() => {
-    clearInterval(iv); // Stop blinking
-    led1.write(0, function() {});
-    led2.write(0, function() {});
-    led3.write(0, function() {});
-    ledGreen.write(0, function() {});
-    ledRed.write(0, function() {});
-  }, 3000);
-  say.speak("Press button to begin scanning.");
+    const iv = setInterval(() => {
+        led1.writeSync(led1.readSync() ^ 1);
+        led2.writeSync(led2.readSync() ^ 1);
+        led3.writeSync(led3.readSync() ^ 1);
+        ledGreen.writeSync(ledGreen.readSync() ^ 1);
+        ledRed.writeSync(ledRed.readSync() ^ 1);
+    }, 200);
+    // Stop blinking the LED and turn it off after 5 seconds
+    setTimeout(() => {
+        clearInterval(iv); // Stop blinking
+        led1.write(0, function () { });
+        led2.write(0, function () { });
+        led3.write(0, function () { });
+        ledGreen.write(0, function () { });
+        ledRed.write(0, function () { });
+    }, 3000);
+    say.speak("Press button to begin scanning.");
 }
 
 function flashLed(isCorrectBin) {
-  const iv = setInterval(() => {
-    isCorrectBin
-      ? ledGreen.write(1, function() {})
-      : ledRed.writeSync(1, function() {});
-  }, 200);
-  // Stop blinking the LED and turn it off after 5 seconds
-  setTimeout(() => {
-    clearInterval(iv); // Stop blinking
-    isCorrectBin
-      ? ledGreen.write(0, function() {})
-      : ledRed.writeSync(0, function() {});
-  }, 3000);
+    const iv = setInterval(() => {
+        isCorrectBin
+            ? ledGreen.write(1, function () { })
+            : ledRed.writeSync(1, function () { });
+    }, 200);
+    // Stop blinking the LED and turn it off after 5 seconds
+    setTimeout(() => {
+        clearInterval(iv); // Stop blinking
+        isCorrectBin
+            ? ledGreen.write(0, function () { })
+            : ledRed.writeSync(0, function () { });
+    }, 3000);
 }
 
 function reset() {
-  led1.write(0, function() {});
-  led2.write(0, function() {});
-  led3.write(0, function() {});
-  ledGreen.write(0, function() {});
-  ledRed.write(0, function() {});
-  currentResult = null;
+    led1.write(0, function () { });
+    led2.write(0, function () { });
+    led3.write(0, function () { });
+    ledGreen.write(0, function () { });
+    ledRed.write(0, function () { });
+    currentResult = null;
 }
 
-process.on("SIGINT", function() {
-  led1.unexport();
-  led2.unexport();
-  led3.unexport();
-  ledGreen.unexport();
-  ledRed.unexport();
+process.on("SIGINT", function () {
+    led1.unexport();
+    led2.unexport();
+    led3.unexport();
+    ledGreen.unexport();
+    ledRed.unexport();
 });
 
 // // API Processing - set LED
