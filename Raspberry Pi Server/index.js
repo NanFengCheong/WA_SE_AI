@@ -4,7 +4,7 @@ var RaspiCam = require("raspicam");
 var fs = require("fs");
 var path = require("path");
 const say = require("say");
-
+var gpio = require("onoff").Gpio;
 //constant
 var predictImageUrl = "https://wa-se-ai-api.azurewebsites.net/api/Classification/PredictImage";
 var paperLedGpio = 27, plasticLedGpio = 22, otherLedGpio = 10, correctLedGpio = 9, failedLedGpio = 11;
@@ -89,8 +89,6 @@ camera.on("read", function (err, timestamp, filename) {
 });
 
 //pir
-var gpio = require("onoff").Gpio;
-
 var led1 = new gpio(paperLedGpio, "high");
 var led2 = new gpio(plasticLedGpio, "high");
 var led3 = new gpio(otherLedGpio, "high");
@@ -214,73 +212,3 @@ process.on("SIGINT", function () {
     ledGreen.unexport();
     ledRed.unexport();
 });
-
-// // API Processing - set LED
-// (function cameraAPI() {
-//     var result = 0; // 0- Not identified; 1- Paper; 2-Metal/Plastic ; 3-Other (General Waste)
-
-//     apiLED = true;
-
-//     // Capture image with camera then create POST request [3]
-
-//     // reply [4]
-//     apiLED = false;
-
-//     if (result == 0) {
-//         // Result is failed to identify
-//         errorLED = true;
-//     } else {
-//         LED1 = false;
-//         LED2 = false;
-//         LED3 = false;
-
-//         // Play audio [5]
-//         audio = true;
-
-//         if (result == 1) {
-//             LED1 = true;
-//         }
-
-//         if (result == 2) {
-//             LED2 = true;
-//         }
-
-//         if (result == 3) {
-//             LED3 = true;
-//         }
-
-//         waitLED = true;
-//         waitingWaste();
-//         setTimeout(reset, 15000); // [5-6]
-//     }
-// })();
-
-// // Trigger Camera
-// function waitingWaste() {
-//   // Checks if waste is put in the correct bins - [6]
-//   if (sensor2 == false && sensor3 == false && sensor3 == false) {
-//     waitLED = false;
-//     // Play audio - Thanks
-//   } else {
-//     if (sensor2 == LED1) {
-//       greenLED = true;
-//       redLED = false;
-
-//       sensor2 = false;
-//     } else if (sensor3 == LED2) {
-//       greenLED = true;
-//       redLED = false;
-
-//       sensor3 = false;
-//     } else if (sensor3 == LED3) {
-//       greenLED = true;
-//       redLED = false;
-
-//       sensor3 = false;
-//     } else {
-//       greenLED = false;
-//       redLED = true;
-//     }
-//     setTimeout(waitingWaste, 1000);
-//   }
-// }
