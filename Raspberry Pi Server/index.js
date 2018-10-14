@@ -5,6 +5,12 @@ var fs = require("fs");
 var path = require("path");
 const say = require("say");
 
+//constant
+var predictImageUrl = "https://wa-se-ai-api.azurewebsites.net/api/Classification/PredictImage";
+var paperLedGpio = 27, plasticLedGpio = 22, otherLedGpio = 10, correctLedGpio = 9, failedLedGpio = 11;
+var paperSensorGpio = 14, plasticSensorGpio = 15, otherSensorGpio = 18;
+var buttonGpio = 23;
+
 var camera = new RaspiCam({
     mode: "photo",
     output: "./output.jpg",
@@ -18,8 +24,7 @@ camera.on("read", function (err, timestamp, filename) {
     var imagePath = path.join(__dirname, "output.jpg");
     if (fs.existsSync(imagePath)) {
         say.speak("Sending image to server for processing. Please be patient.");
-        var r = request.post(
-            "https://wa-se-ai-api.azurewebsites.net/api/Classification/PredictImage",
+        var r = request.post(predictImageUrl,
             function callback(err, httpResponse, body) {
                 if (err) {
                     // say.speak("Something wrong with server");
@@ -86,17 +91,17 @@ camera.on("read", function (err, timestamp, filename) {
 //pir
 var gpio = require("onoff").Gpio;
 
-var led1 = new gpio(27, "high");
-var led2 = new gpio(22, "high");
-var led3 = new gpio(10, "high");
-var ledGreen = new gpio(9, "high");
-var ledRed = new gpio(11, "high");
+var led1 = new gpio(paperLedGpio, "high");
+var led2 = new gpio(plasticLedGpio, "high");
+var led3 = new gpio(otherLedGpio, "high");
+var ledGreen = new gpio(correctLedGpio, "high");
+var ledRed = new gpio(failedLedGpio, "high");
 
-var sensor1 = new gpio(14, "in", "both");
-var sensor2 = new gpio(15, "in", "both");
-var sensor3 = new gpio(18, "in", "both");
+var sensor1 = new gpio(paperSensorGpio, "in", "both");
+var sensor2 = new gpio(plasticSensorGpio, "in", "both");
+var sensor3 = new gpio(otherSensorGpio, "in", "both");
 
-const button = new gpio(23, "in", "both");
+const button = new gpio(buttonGpio, "in", "both");
 
 var operationStarted = false;
 var isDetectedSpeechFinished = false;
