@@ -7,7 +7,7 @@ const say = require("say");
 var gpio = require("onoff").Gpio;
 //constant
 var predictImageUrl = "https://wa-se-ai-api.azurewebsites.net/api/Classification/PredictImage";
-var paperLedGpio = 27, plasticLedGpio = 22, otherLedGpio = 10, correctLedGpio = 9, failedLedGpio = 11;
+var paperLedGpio = 27, plasticLedGpio = 22, otherLedGpio = 10, successLedGpio = 9, failedLedGpio = 11;
 var paperSensorGpio = 14, plasticSensorGpio = 15, otherSensorGpio = 18;
 var buttonGpio = 23;
 
@@ -44,19 +44,19 @@ camera.on("read", function (err, timestamp, filename) {
                             case "Bin1":
                                 binColor = "blue";
                                 binLabel = "paper";
-                                led1.write(1, function () { });
+                                paperLed.write(1, function () { });
                                 console.log(binName + " " + binColor);
                                 break;
                             case "Bin2":
                                 binColor = "orange";
                                 binLabel = "metal or plastic";
-                                led2.write(1, function () { });
+                                plasticLed.write(1, function () { });
                                 console.log(binName + " " + binColor);
                                 break;
                             case "Bin3":
                                 binColor = "brown";
                                 binLabel = "other";
-                                led3.write(1, function () { });
+                                otherLed.write(1, function () { });
                                 console.log(binName + " " + binColor);
                                 break;
                             default:
@@ -89,11 +89,11 @@ camera.on("read", function (err, timestamp, filename) {
 });
 
 //pir
-var led1 = new gpio(paperLedGpio, "high");
-var led2 = new gpio(plasticLedGpio, "high");
-var led3 = new gpio(otherLedGpio, "high");
-var ledGreen = new gpio(correctLedGpio, "high");
-var ledRed = new gpio(failedLedGpio, "high");
+var paperLed = new gpio(paperLedGpio, "high");
+var plasticLed = new gpio(plasticLedGpio, "high");
+var otherLed = new gpio(otherLedGpio, "high");
+var successLed = new gpio(successLedGpio, "high");
+var failedLed = new gpio(failedLedGpio, "high");
 
 var sensor1 = new gpio(paperSensorGpio, "in", "both");
 var sensor2 = new gpio(plasticSensorGpio, "in", "both");
@@ -163,20 +163,20 @@ sensor3.watch(function (err, value) {
 
 function testLED() {
     const iv = setInterval(() => {
-        led1.writeSync(led1.readSync() ^ 1);
-        led2.writeSync(led2.readSync() ^ 1);
-        led3.writeSync(led3.readSync() ^ 1);
-        ledGreen.writeSync(ledGreen.readSync() ^ 1);
-        ledRed.writeSync(ledRed.readSync() ^ 1);
+        paperLed.writeSync(paperLed.readSync() ^ 1);
+        plasticLed.writeSync(plasticLed.readSync() ^ 1);
+        otherLed.writeSync(otherLed.readSync() ^ 1);
+        successLed.writeSync(successLed.readSync() ^ 1);
+        failedLed.writeSync(failedLed.readSync() ^ 1);
     }, 200);
     // Stop blinking the LED and turn it off after 5 seconds
     setTimeout(() => {
         clearInterval(iv); // Stop blinking
-        led1.write(0, function () { });
-        led2.write(0, function () { });
-        led3.write(0, function () { });
-        ledGreen.write(0, function () { });
-        ledRed.write(0, function () { });
+        paperLed.write(0, function () { });
+        plasticLed.write(0, function () { });
+        otherLed.write(0, function () { });
+        successLed.write(0, function () { });
+        failedLed.write(0, function () { });
     }, 3000);
     say.speak("Press button to begin scanning.");
 }
@@ -184,31 +184,31 @@ function testLED() {
 function flashLed(isCorrectBin) {
     const iv = setInterval(() => {
         isCorrectBin
-            ? ledGreen.write(1, function () { })
-            : ledRed.writeSync(1, function () { });
+            ? successLed.write(1, function () { })
+            : failedLed.writeSync(1, function () { });
     }, 200);
-    // Stop blinking the LED and turn it off after 5 seconds
+    // Stop blinking the LED and turn it off after 3 seconds
     setTimeout(() => {
         clearInterval(iv); // Stop blinking
         isCorrectBin
-            ? ledGreen.write(0, function () { })
-            : ledRed.writeSync(0, function () { });
+            ? successLed.write(0, function () { })
+            : failedLed.writeSync(0, function () { });
     }, 3000);
 }
 
 function reset() {
-    led1.write(0, function () { });
-    led2.write(0, function () { });
-    led3.write(0, function () { });
-    ledGreen.write(0, function () { });
-    ledRed.write(0, function () { });
+    paperLed.write(0, function () { });
+    plasticLed.write(0, function () { });
+    otherLed.write(0, function () { });
+    successLed.write(0, function () { });
+    failedLed.write(0, function () { });
     currentResult = null;
 }
 
 process.on("SIGINT", function () {
-    led1.unexport();
-    led2.unexport();
-    led3.unexport();
-    ledGreen.unexport();
-    ledRed.unexport();
+    paperLed.unexport();
+    plasticLed.unexport();
+    otherLed.unexport();
+    successLed.unexport();
+    failedLed.unexport();
 });
