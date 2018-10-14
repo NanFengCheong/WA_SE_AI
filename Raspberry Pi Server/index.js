@@ -30,55 +30,7 @@ camera.on("read", function (err, timestamp, filename) {
                     // say.speak("Something wrong with server");
                     return console.error("upload failed:", err);
                 } else {
-                    console.log("Server responded with:", body);
-                    currentResult = JSON.parse(body);
-                    //   {"predictionModel":{"probability":0.999997258,"tagId":"1466abb7-0c60-4739-8440-d74cba80121c","tagName":"Plastic Bottle","boundingBox":null},"tag":{"id":"1466abb7-0c60-4739-8440-d74cba80121c","name":"Plastic Bottle","description":"Recyclable-Plastic@Bin2","imageCount":30}}
-                    //get audio
-                    var audio = null;
-                    if (currentResult != null && currentResult.tag != null) {
-                        var recycleType = currentResult.tag.description.split("@")[0];
-                        var binName = currentResult.tag.description.split("@")[1];
-                        var binColor = "";
-                        var binLabel = "";
-                        switch (binName) {
-                            case "Bin1":
-                                binColor = "blue";
-                                binLabel = "paper";
-                                paperLed.write(1, function () { });
-                                console.log(binName + " " + binColor);
-                                break;
-                            case "Bin2":
-                                binColor = "orange";
-                                binLabel = "metal or plastic";
-                                plasticLed.write(1, function () { });
-                                console.log(binName + " " + binColor);
-                                break;
-                            case "Bin3":
-                                binColor = "brown";
-                                binLabel = "other";
-                                otherLed.write(1, function () { });
-                                console.log(binName + " " + binColor);
-                                break;
-                            default:
-                                break;
-                        }
-
-                        audio =
-                            currentResult.tag.name +
-                            " recognized. It is classified as " +
-                            recycleType +
-                            ". Please proceed to throw it in " +
-                            binColor +
-                            " color bin labelled as " +
-                            binLabel;
-                    }
-
-                    if (audio != null) {
-                        console.log(audio);
-                        say.speak(audio, null, null, function () {
-                            isDetectedSpeechFinished = true;
-                        });
-                    }
+                    processResult(body);
                 }
                 fs.unlink(imagePath, function () { });
             }
@@ -87,6 +39,57 @@ camera.on("read", function (err, timestamp, filename) {
         form.append("formFile", fs.createReadStream(imagePath));
     }
 });
+
+function processResult(body) {
+    console.log("Server responded with:", body);
+    currentResult = JSON.parse(body);
+    //get audio
+    var audio = null;
+    if (currentResult != null && currentResult.tag != null) {
+        var recycleType = currentResult.tag.description.split("@")[0];
+        var binName = currentResult.tag.description.split("@")[1];
+        var binColor = "";
+        var binLabel = "";
+        switch (binName) {
+            case "Bin1":
+                binColor = "blue";
+                binLabel = "paper";
+                paperLed.write(1, function () { });
+                console.log(binName + " " + binColor);
+                break;
+            case "Bin2":
+                binColor = "orange";
+                binLabel = "metal or plastic";
+                plasticLed.write(1, function () { });
+                console.log(binName + " " + binColor);
+                break;
+            case "Bin3":
+                binColor = "brown";
+                binLabel = "other";
+                otherLed.write(1, function () { });
+                console.log(binName + " " + binColor);
+                break;
+            default:
+                break;
+        }
+
+        audio =
+            currentResult.tag.name +
+            " recognized. It is classified as " +
+            recycleType +
+            ". Please proceed to throw it in " +
+            binColor +
+            " color bin labelled as " +
+            binLabel;
+    }
+
+    if (audio != null) {
+        console.log(audio);
+        say.speak(audio, null, null, function () {
+            isDetectedSpeechFinished = true;
+        });
+    }
+}
 
 //pir
 var paperLed = new gpio(paperLedGpio, "high");
@@ -146,19 +149,16 @@ function validateCurrentWaste(sensorName) {
 sensor1.watch(function (err, value) {
     console.log("sensor1 = " + value);
     if (value == 1) validateCurrentWaste("sensor1");
-    //trigger m2x
 });
 
 sensor2.watch(function (err, value) {
     console.log("sensor2 = " + value);
     if (value == 1) validateCurrentWaste("sensor2");
-    //trigger m2x
 });
 
 sensor3.watch(function (err, value) {
     console.log("sensor3 = " + value);
     if (value == 1) validateCurrentWaste("sensor3");
-    //trigger m2x
 });
 
 function testLED() {
@@ -169,7 +169,7 @@ function testLED() {
         successLed.writeSync(successLed.readSync() ^ 1);
         failedLed.writeSync(failedLed.readSync() ^ 1);
     }, 200);
-    // Stop blinking the LED and turn it off after 5 seconds
+    // Stop blinking the LED and turn it off after 3 seconds
     setTimeout(() => {
         clearInterval(iv); // Stop blinking
         paperLed.write(0, function () { });
