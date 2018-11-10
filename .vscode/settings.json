@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/79117062-21f1-4a34-807b-cdaa5bec88c4/resourceGroups/waseai/providers/Microsoft.Web/sites/waseai",
+    "appService.deploySubpath": "WA_SA_AI.Api/bin/Release/netcoreapp2.1/publish"
+}
