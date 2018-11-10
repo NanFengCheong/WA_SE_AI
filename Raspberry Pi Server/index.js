@@ -4,16 +4,14 @@ var fs = require("fs");
 var path = require("path");
 const say = require("say");
 const gpioComponent = require("./gpioComponent.js");
+const config = require('./config.json')
 
 var camera = new RaspiCam({
   mode: "photo",
   output: "./output.jpg",
-  timeout: "0",
+  timeout: "100",
 
 });
-
-var predictImageUrl =
-  "https://waseai.azurewebsites.net/api/Classification/PredictImage";
 
 var currentResult = null;
 
@@ -22,21 +20,23 @@ camera.on("read", function (err, timestamp, filename) {
   if (fs.existsSync(imagePath)) {
     console.log("Sending image to server. Please be patient.")
     say.speak("Sending image to server. Please be patient.");
-    var r = request.post(predictImageUrl, {}, function callback(
+    flashLed([gpioComponent.button1Led, gpioComponent.button2Led, gpioComponent.button3Led, gpioComponent.button4Led])
+    var r = request.post(config.predictImageUrl, { timeout: 30000 }, function callback(
       err,
       httpResponse,
       body
     ) {
       if (err) {
         // say.speak("Something wrong with server");
-        return console.error("upload failed:", err);
+        console.error("upload failed:", err);
+        reset();
       } else {
+        flashLed([gpioComponent.button1Led, gpioComponent.button2Led, gpioComponent.button3Led, gpioComponent.button4Led], null, null, true)
         processResult(body);
       }
       fs.unlink(imagePath, function () { });
     });
-    var form = r.form();
-    form.append("formFile", fs.createReadStream(imagePath));
+    r.form().append("formFile", fs.createReadStream(imagePath));
   }
 });
 
@@ -50,24 +50,22 @@ function processResult(body) {
     var binName = currentResult.tag.description.split("@")[1];
     var binColor = "";
     var binLabel = "";
+    console.log(binName + " " + binColor);
     switch (binName) {
       case "Bin1":
         binColor = "black";
         binLabel = "paper";
         gpioComponent.paperLed.write(0, () => { });
-        console.log(binName + " " + binColor);
         break;
       case "Bin2":
         binColor = "grey";
         binLabel = "metal or plastic";
         gpioComponent.plasticLed.write(0, () => { });
-        console.log(binName + " " + binColor);
         break;
       case "Bin3":
         binColor = "white";
         binLabel = "other";
         gpioComponent.otherLed.write(0, () => { });
-        console.log(binName + " " + binColor);
         break;
       default:
         break;
@@ -77,7 +75,7 @@ function processResult(body) {
       currentResult.tag.name +
       " recognized. It is classified as " +
       recycleType +
-      ". Please proceed to throw it in " +
+      ". Please throw it in " +
       binColor +
       " color bin labelled as " +
       binLabel;
@@ -89,6 +87,10 @@ function processResult(body) {
       isDetectedSpeechFinished = true;
     });
   }
+
+  setTimeout(() => {
+    reset();
+  }, 10000);
 }
 
 testLED();
@@ -164,7 +166,6 @@ function validateCurrentWaste(sensorName) {
       say.speak("You throw it in the correct bin, well done.");
     }
     reset();
-    operationStarted = false;
   }
 }
 
@@ -184,28 +185,54 @@ gpioComponent.sensor3.watch(function (err, value) {
 });
 
 function testLED() {
-  const iv = setInterval(() => {
-    gpioComponent.paperLed.writeSync(gpioComponent.paperLed.readSync() ^ 1);
-    gpioComponent.plasticLed.writeSync(gpioComponent.plasticLed.readSync() ^ 1);
-    gpioComponent.otherLed.writeSync(gpioComponent.otherLed.readSync() ^ 1);
-  }, 200);
-  // Stop blinking the LED and turn it off after 3 seconds
-  setTimeout(() => {
-    clearInterval(iv); // Stop blinking
-    reset();
-  }, 3000);
+  const leds = Object.keys(gpioComponent)
+    .filter(name => {
+      return name.toLowerCase().includes("led")
+    })
+    .map(name => {
+      return gpioComponent[name];
+    })
+  flashLed(leds, 250, 5000)
+  reset();
   say.speak("Hi, My name is wa seh A I");
 }
 
+function flashLed(ledArray, flashDuration = 200, duration = 3000, stopNow) {
+  const iv = setInterval(() => {
+    ledArray.forEach((led) => {
+      led.writeSync(led.readSync() ^ 1);
+    })
+  }, flashDuration);
+
+  if (stopNow) {
+    clearInterval(iv); // Stop blinking
+    reset();
+    return;
+  }
+
+  setTimeout(() => {
+    clearInterval(iv); // Stop blinking
+    reset();
+  }, duration);
+}
+
 function reset() {
+  operationStarted = false;
+  currentResult = null;
+  gpioComponent.button1Led.write(0, () => { });
+  gpioComponent.button2Led.write(0, () => { });
+  gpioComponent.button3Led.write(0, () => { });
+  gpioComponent.button4Led.write(0, () => { });
+
   gpioComponent.paperLed.write(1, () => { });
   gpioComponent.plasticLed.write(1, () => { });
   gpioComponent.otherLed.write(1, () => { });
-  currentResult = null;
 }
 
 process.on("SIGINT", function () {
-  gpioComponent.paperLed.unexport();
-  gpioComponent.plasticLed.unexport();
-  gpioComponent.otherLed.unexport();
+  Object.keys(gpioComponent)
+    .filter(name => name.includes("led"))
+    .map(name => {
+      gpioComponent[name].unexport();
+    })
 });

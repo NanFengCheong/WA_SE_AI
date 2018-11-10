@@ -12,5 +12,6 @@
     "button1LedGpio": 12,
     "button2LedGpio": 16,
     "button3LedGpio": 20,
-    "button4LedGpio": 21
+    "button4LedGpio": 21,
+    "predictImageUrl": "https://waseai.azurewebsites.net/api/Classification/PredictImage"
 }

@@ -5,10 +5,10 @@ var gpioComponent = {
     paperLed: new gpio(config.paperLedGpio, "out"),
     plasticLed: new gpio(config.plasticLedGpio, "out"),
     otherLed: new gpio(config.otherLedGpio, "out"),
-    button1Led: new gpio(config.button1LedGpio, "high"),
-    button2Led: new gpio(config.button2LedGpio, "high"),
-    button3Led: new gpio(config.button3LedGpio, "high"),
-    button4Led: new gpio(config.button4LedGpio, "high"),
+    button1Led: new gpio(config.button1LedGpio, "out"),
+    button2Led: new gpio(config.button2LedGpio, "out"),
+    button3Led: new gpio(config.button3LedGpio, "out"),
+    button4Led: new gpio(config.button4LedGpio, "out"),
     sensor1: new gpio(config.paperSensorGpio, "in", "rising", {
         debounceTimeout: 500
     }),
