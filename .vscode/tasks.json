@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/WA_SA_AI.Api/WA_SA_AI.Api.csproj"
+            ],
+            "problemMatcher": "$msCompile"
+        }
+    ]
+}

@@ -1,0 +1,16 @@
+{
+    "paperLedGpio": 10,
+    "plasticLedGpio": 9,
+    "otherLedGpio": 11,
+    "paperSensorGpio": 17,
+    "plasticSensorGpio": 27,
+    "otherSensorGpio": 22,
+    "button1Gpio": 6,
+    "button2Gpio": 13,
+    "button3Gpio": 19,
+    "button4Gpio": 26,
+    "button1LedGpio": 12,
+    "button2LedGpio": 16,
+    "button3LedGpio": 20,
+    "button4LedGpio": 21
+}
